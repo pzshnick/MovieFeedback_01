@@ -1,0 +1,62 @@
+# Visual Studio специфічні файли
+.vscode/
+.vs/
+*.code-workspace
+
+# Build папки
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# NuGet пакети
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+
+# Azure
+publish/
+Azure/
+
+# Database
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# ASP.NET Core
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+appsettings.Staging.json
+
+# Entity Framework Core
+Migrations/
+
+# API Keys, Sensitive Files
+secret.json
+*.env
+
+# macOS специфічні файли
+.DS_Store
+
+# Windows специфічні файли
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux специфічні файли
+*~

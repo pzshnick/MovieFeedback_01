@@ -1,0 +1,109 @@
+﻿@model MovieFeedback.ViewModels.ManageMoviesPageViewModel
+
+@{
+    ViewData["Title"] = "Manage Movies";
+}
+
+<div class="container mt-5 text-white">
+    <h2 class="mb-4">Manage Movies</h2>
+
+    <div class="glass-card p-4 mb-4">
+        <form asp-action="ManageMovies" method="get" class="row justify-content-center g-3">
+            <div class="col-12 col-md-10">
+                <input type="text" name="searchQuery" class="form-control login-input" placeholder="Search by Title..." value="@Model.SearchQuery" />
+            </div>
+            <div class="col-12 col-md-2 d-flex justify-content-center">
+                <button type="submit" class="btn btn-outline-light w-100">Search</button>
+            </div>
+        </form>
+    </div>
+
+
+    @if (Model.Movies.Any())
+    {
+        <div>
+            <table class="movies-table glass-card">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Rating</th>
+                        <th>Release Date</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var movie in Model.Movies)
+                    {
+                        <tr>
+                            <td>@movie.Title</td>
+                            <td>@movie.Rating.ToString("0.0")</td>
+                            <td>@(movie.ReleaseDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            <td class="text-center">
+                                <a asp-action="EditMovie" asp-route-id="@movie.MovieId" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                                <form asp-action="DeleteMovie" asp-route-id="@movie.MovieId" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this movie?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @{
+                int totalPages = (int)Math.Ceiling((double)Model.TotalMovies / 10); // Або яке там у тебе значення pageSize
+                int currentPage = Model.CurrentPage;
+                int maxVisiblePages = 7;
+                int startPage = Math.Max(1, currentPage - 3);
+                int endPage = Math.Min(totalPages, startPage + maxVisiblePages - 1);
+
+                if (endPage - startPage < maxVisiblePages - 1)
+                {
+                    startPage = Math.Max(1, endPage - maxVisiblePages + 1);
+                }
+            }
+
+            @if (totalPages > 1)
+            {
+                <nav class="mt-4 mb-3 text-center">
+                    <ul class="pagination justify-content-center flex-wrap">
+
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <form method="get" asp-controller="Admin" asp-action="ManageMovies" class="d-inline">
+                                <input type="hidden" name="page" value="@(currentPage - 1)" />
+                                <input type="hidden" name="searchQuery" value="@Model.SearchQuery" />
+                                <button class="page-link" title="Previous" aria-label="Previous">‹</button>
+                            </form>
+                        </li>
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <form method="get" asp-controller="Admin" asp-action="ManageMovies" class="d-inline">
+                                    <input type="hidden" name="page" value="@i" />
+                                    <input type="hidden" name="searchQuery" value="@Model.SearchQuery" />
+                                    <button type="submit" class="page-link">@i</button>
+                                </form>
+                            </li>
+                        }
+
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <form method="get" asp-controller="Admin" asp-action="ManageMovies" class="d-inline">
+                                <input type="hidden" name="page" value="@(currentPage + 1)" />
+                                <input type="hidden" name="searchQuery" value="@Model.SearchQuery" />
+                                <button class="page-link" title="Next" aria-label="Next">›</button>
+                            </form>
+                        </li>
+
+                    </ul>
+                </nav>
+            }
+
+
+        </div>
+    }
+    else
+    {
+        <div class="glass-card p-4 text-center">
+            <p class="text-muted mb-0">No movies found.</p>
+        </div>
+    }
+</div>

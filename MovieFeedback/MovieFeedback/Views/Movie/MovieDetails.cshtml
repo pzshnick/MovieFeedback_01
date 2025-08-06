@@ -1,0 +1,199 @@
+﻿@model MovieFeedback.ViewModels.MovieDetailsViewModel
+
+<div class="container mt-4 text-white">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="@($"https://image.tmdb.org/t/p/w300{Model.PosterPath}")" class="img-fluid rounded shadow" alt="@Model.Title" />
+        </div>
+        <div class="col-md-8">
+            <h2>@Model.Title</h2>
+            <p>@Model.Description</p>
+
+            <p><strong>Rating:</strong> @Model.Rating</p>
+            <p><strong>Release Date:</strong> @Model.ReleaseDate.ToShortDateString()</p>
+            <p><strong>Runtime:</strong> @Model.Runtime min</p>
+            <p><strong>Language:</strong> @Model.Language</p>
+            <p><strong>Genres:</strong> @string.Join(", ", Model.Genres)</p>
+            <p><strong>Actors:</strong> @string.Join(", ", Model.Actors)</p>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            @if (User.IsInRole("User") || User.IsInRole("Admin"))
+            {
+                <div class="glass-card text-white mb-4 shadow rounded">
+                    <div class="card-body">
+                        <h4>Leave a Comment</h4>
+                        <form method="post" asp-action="AddComment" asp-controller="Movie">
+                            <input type="hidden" name="movieId" value="@Model.MovieId" />
+                            <div class="mb-3">
+                                <textarea class="form-control glass-textarea" name="content" rows="4" placeholder="Write your comment here..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Comment</button>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="glass-card text-white text-center p-3">
+                    Visitors cannot leave comments
+                </div>
+            }
+
+            <div class="glass-card mt-4 text-white shadow rounded">
+                <div class="card-body">
+                    <h4 class="mb-4">Comments</h4>
+                    @if (Model.Comments.Any())
+                    {
+                        @foreach (var comment in Model.Comments)
+                        {
+                            @await Html.PartialAsync("_CommentPartial", comment, new ViewDataDictionary(ViewData) { { "Level", 0 }, { "MovieId", Model.MovieId } })
+                            <hr class="mt-4 mb-4"/>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No comments yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="glass-card text-white shadow rounded">
+                <div class="card-body">
+                    <h4>Rate this Movie</h4>
+
+                    @if (User.IsInRole("User") || User.IsInRole("Admin"))
+                    {
+                        @if (Model.UserRating.HasValue)
+                        {
+                            <div class="glass-card text-white shadow rounded mb-3 p-3">
+                                <h5 class="mb-4">
+                                    You have already rated this movie: <strong>@Model.UserRating</strong>
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                </h5>
+                                <button type="button" class="btn btn-outline-light w-100" onclick="openEditRatingModal(@Model.MovieId, @Model.UserRating)">
+                                    Edit Rating
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <form method="post" asp-action="Rate" asp-controller="Movie" class="glass-card text-white shadow rounded p-3">
+                                <input type="hidden" name="movieId" value="@Model.MovieId" />
+                                <div class="mb-3">
+                                    <select name="rating" class="form-select bg-dark text-white border-light" required>
+                                        <option disabled selected>Select rating</option>
+                                        @for (int i = 1; i <= 10; i++)
+                                        {
+                                            <option value="@i">@i</option>
+                                        }
+                                    </select>
+                                </div>
+                                <button class="btn btn-submit-rating w-100 mb-2">Submit Rating</button>
+                            </form>
+                        }
+
+                        @if (Model.IsFavorite)
+                        {
+                            <div class="glass-card text-white shadow rounded mt-4 mb-3 p-3">
+                                <h5 class="mb-4">
+                                    This movie is in your Favorites <i class="bi bi-heart-fill text-danger"></i>
+                                </h5>
+                                <form method="post" asp-action="ToggleFavorite" asp-controller="Movie">
+                                    <input type="hidden" name="movieId" value="@Model.MovieId" />
+                                    <button type="submit" class="btn btn-outline-danger w-100">Remove from Favorites</button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <form method="post" asp-action="ToggleFavorite" asp-controller="Movie" class="text-white rounded mt-4 p-3">
+                                <input type="hidden" name="movieId" value="@Model.MovieId" />
+                                <button class="btn btn-favorite w-100">Add to Favorites</button>
+                            </form>
+                        }
+                    }
+                    else
+                    {
+                        <div class="glass-card text-white text-center p-3 mt-3">
+                            To rate and save your favorite movies, sign in with a different account.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal для редагування коментаря -->
+<div class="modal fade" id="editCommentModal" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card text-white border-0">
+            <form method="post" asp-action="EditComment" asp-controller="Comment">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCommentModalLabel">Edit Comment</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="commentId" id="editCommentId" />
+                    <div class="mb-3">
+                        <textarea class="form-control glass-textarea" id="editCommentContent" name="content" rows="4" placeholder="Write your comment here..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal для редагування оцінки -->
+<div class="modal fade" id="editRatingModal" tabindex="-1" aria-labelledby="editRatingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card text-white border-0">
+            <form method="post" asp-action="Rate" asp-controller="Movie">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editRatingModalLabel">Edit Your Rating</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body mt-3">
+                    <input type="hidden" name="movieId" id="editRatingMovieId" />
+                    <div class="mb-3">
+                        <select name="rating" id="editRatingValue" class="form-select glass-textarea bg-dark text-white border-light">
+                            @for (int i = 1; i <= 10; i++)
+                            {
+                                <option value="@i">@i</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditCommentModal(commentId, content) {
+        document.getElementById('editCommentId').value = commentId;
+        document.getElementById('editCommentContent').value = content;
+        var modal = new bootstrap.Modal(document.getElementById('editCommentModal'));
+        modal.show();
+    }
+
+    function openEditRatingModal(movieId, currentRating) {
+        document.getElementById('editRatingMovieId').value = movieId;
+        document.getElementById('editRatingValue').value = currentRating;
+        var modal = new bootstrap.Modal(document.getElementById('editRatingModal'));
+        modal.show();
+    }
+</script>

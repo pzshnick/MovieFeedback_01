@@ -1,0 +1,104 @@
+﻿@model MovieFeedback.ViewModels.MovieEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Movie";
+}
+
+<div class="container glass-card mt-3 text-white">
+    <h2 class="mb-4">Edit Movie</h2>
+
+    <form asp-action="EditMovie" asp-controller="Admin" method="post">
+        <input type="hidden" asp-for="MovieId" />
+
+        <!-- Назва фільму -->
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input asp-for="Title" class="form-control login-input" required />
+        </div>
+
+        <!-- Опис -->
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control login-input" rows="4"></textarea>
+        </div>
+
+        <!-- Жанри -->
+        <div class="mb-4">
+            <label class="form-label">Genres</label>
+
+            <!-- Список вже доданих жанрів -->
+            <div id="genresList" class="d-flex flex-wrap gap-2 mb-3">
+                @foreach (var genre in Model.Genres)
+                {
+                    <div class="d-flex align-items-center bg-purple rounded-pill px-3 py-2 text-white position-relative" style="background-color: #6f42c1;">
+                        <span class="me-3">@genre</span>
+                        <button type="button" class="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; font-size: 12px;" onclick="removeGenre(this, '@genre')">
+                            ×
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <!-- Вибір жанру для додавання -->
+            <div class="d-flex gap-2">
+                <select id="availableGenresSelect" class="form-select login-input">
+                    @foreach (var genre in Model.AvailableGenres.Except(Model.Genres))
+                    {
+                        <option value="@genre">@genre</option>
+                    }
+                </select>
+                <button type="button" class="btn btn-outline-light" onclick="addGenre()">Add</button>
+            </div>
+
+            <!-- Сховане поле для збереження жанрів -->
+            <input type="hidden" id="genresHiddenInput" name="Genres" value="@string.Join(",", Model.Genres)" />
+        </div>
+
+        <!-- Кнопки -->
+        <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="ManageMovies" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function removeGenre(button, genreName) {
+        const badge = button.closest('div');
+        badge.remove();
+
+        const select = document.getElementById('availableGenresSelect');
+        const option = document.createElement('option');
+        option.value = genreName;
+        option.text = genreName;
+        select.appendChild(option);
+
+        updateGenresHiddenInput();
+    }
+
+    function addGenre() {
+        const select = document.getElementById('availableGenresSelect');
+        const selectedGenre = select.value;
+        if (!selectedGenre) return;
+
+        const genresList = document.getElementById('genresList');
+        const badge = document.createElement('div');
+        badge.className = 'd-flex align-items-center bg-purple rounded-pill px-3 py-2 text-white position-relative';
+        badge.style.backgroundColor = '#6f42c1';
+        badge.innerHTML = `
+            <span class="me-3">${selectedGenre}</span>
+            <button type="button" class="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; font-size: 12px;" onclick="removeGenre(this, '${selectedGenre}')">×</button>
+        `;
+        genresList.appendChild(badge);
+
+        select.querySelector(`option[value="${selectedGenre}"]`).remove();
+        select.selectedIndex = 0;
+
+        updateGenresHiddenInput();
+    }
+
+    function updateGenresHiddenInput() {
+        const genres = [...document.querySelectorAll('#genresList span')].map(span => span.innerText);
+        document.getElementById('genresHiddenInput').value = genres.join(',');
+    }
+</script>

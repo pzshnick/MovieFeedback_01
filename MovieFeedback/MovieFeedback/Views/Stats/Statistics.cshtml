@@ -1,0 +1,58 @@
+﻿@{
+    ViewData["Title"] = "Statistics";
+}
+
+<div class="container-fluid mt-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="list-group glass-card p-2">
+                <button type="button" class="list-group-item list-group-item-action active" onclick="switchChart('ratings')">
+                    Ratings History
+                </button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="switchChart('favorites')">
+                    Favorite Movies
+                </button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="switchChart('activity')">
+                    Activity Level
+                </button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="switchChart('average')">
+                    Average Rating
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Chart Area -->
+        <div class="col-md-9">
+            <div class="glass-card p-4 text-white">
+                <h3 id="chartTitle">Ratings History</h3>
+
+                <div class="d-flex flex-wrap align-items-end gap-3 mb-4">
+                    <div>
+                        <label class="form-label">From:</label>
+                        <input type="date" id="fromDate" name="fromDate" class="form-control login-input" />
+                    </div>
+                    <div>
+                        <label class="form-label">To:</label>
+                        <input type="date" id="toDate" name="toDate" class="form-control login-input" />
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-light mt-4" onclick="applyFilters()">Apply</button>
+                    </div>
+                </div>
+
+                <div class="align-content-center" style="height: 40vh; position: relative;">
+                    <div id="noDataMessage" class="text-center text-light mb-5" style="font-size: 1.2rem; margin-top: 10%;">
+                        Please select a date range to display statistics.
+                    </div>
+                    <canvas id="statisticsChart" style="display: none;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="errorMessage" class="text-danger mt-3" style="display: none; font-weight: bold;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="~/js/statistics.js"></script>

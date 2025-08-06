@@ -1,0 +1,87 @@
+﻿@using System.Linq
+@model MovieFeedback.ViewModels.HomePageViewModel
+
+@if (User.Identity?.IsAuthenticated == true && User.IsInRole("User") || User.IsInRole("Admin"))
+{
+    <h3 class="mb-5 mt-5">Recommended for You</h3>
+    @if (Model.Recommendations != null && Model.Recommendations.Any())
+    {
+        <div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
+            @foreach (var rec in Model.Recommendations)
+            {
+                <div class="col">
+                    <div class="recommendation-card text-white" onclick="redirectToDetails(@rec.MovieId)">
+                        <img src="@($"https://image.tmdb.org/t/p/w300{rec.PosterPath}")" class="recommendation-poster" alt="@rec.Title" />
+                        <div class="recommendation-title text-center mt-2">
+                            @rec.Title
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mb-5">Add some favorite movies to get personalized recommendations!</p>
+    }
+
+    <h3>Your Recent Ratings</h3>
+    @if (Model.RecentRatings != null && Model.RecentRatings.Any())
+    {
+        <table class="movies-table glass-card">
+            <thead>
+                <tr>
+                    <th>Movie</th>
+                    <th>Rating</th>
+                    <th>Rated At</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rating in Model.RecentRatings)
+                {
+                    <tr>
+                        <td>@rating.MovieTitle</td>
+                        <td>@rating.Rating <i class="bi bi-star-fill text-white"></i></td>
+                        <td>@rating.RatedAt.ToString("g")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">You haven't rated any movies yet.</p>
+    }
+}
+else if (User.Identity?.IsAuthenticated == true && User.IsInRole("Visitor"))
+{
+    <h3 class="mb-5 mt-5">Popular Movies</h3>
+    @if (Model.PopularMovies != null && Model.PopularMovies.Any())
+    {
+        <div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
+            @foreach (var movie in Model.PopularMovies)
+            {
+                <div class="col">
+                    <div class="recommendation-card text-white" onclick="redirectToDetails(@movie.MovieId)">
+                        <img src="@($"https://image.tmdb.org/t/p/w300{movie.PosterPath}")" class="recommendation-poster" alt="@movie.Title" />
+                        <div class="recommendation-title text-center mt-2">
+                            @movie.Title
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mb-5">No popular movies available at the moment.</p>
+    }
+}
+
+@section Scripts {
+    <script>
+        function redirectToDetails(movieId) {
+            window.location.href = '/Movie/Details/' + movieId;
+        }
+    </script>
+}

@@ -1,0 +1,141 @@
+﻿@model MovieFeedback.ViewModels.MovieSearchViewModel
+
+<div class="container mt-4">
+    @if (Model.Results != null && Model.Results.Any())
+    {
+        <h4 class="text-white">@((Model.CurrentPage - 1) * 10 + Model.Results.Count) of @Model.TotalResults result(s) found:</h4>
+
+        <form method="get" asp-controller="Movie" asp-action="Search" class="d-flex gap-2 mb-4">
+            <select name="sortOrder" class="form-select w-auto">
+                <option value="">Sort by...</option>
+                <option value="rating_desc">Rating (high to low)</option>
+                <option value="rating_asc">Rating (low to high)</option>
+                <option value="title_asc">Title (A-Z)</option>
+                <option value="title_desc">Title (Z-A)</option>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+            </select>
+
+            <input type="hidden" name="query" value="@Model.Query" />
+            <input type="hidden" name="genreId" value="@Model.GenreId" />
+            <input type="hidden" name="minRating" value="@Model.MinRating" />
+            <input type="hidden" name="releaseYear" value="@Model.ReleaseYear" />
+            <input type="hidden" name="onlyFavorites" value="@Model.OnlyFavorites" />
+
+            <button type="submit" class="btn btn-outline-light">Sort</button>
+        </form>
+
+        <div class="overflow-hidden mt-4" style="border-radius: 15px;">
+            <table class="movies-table glass-card" style="table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th>Poster</th>
+                        <th>Title</th>
+                        <th>Rating</th>
+                        <th>Release Date</th>
+                        <th>Genres</th>
+                        <th>Runtime</th>
+                        <th>Language</th>
+                        <th>Actors</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var movie in Model.Results)
+                    {
+                        <tr onclick="redirectToDetails(@movie.MovieId)" style="cursor:pointer;">
+                            <td style="width: 100px;">
+                                <img src="@($"https://image.tmdb.org/t/p/w185{movie.PosterPath}")"
+                                     alt="Poster"
+                                     style="width: 100px; height: auto; border-radius: 5px;" />
+                            </td>
+                            <td class="align-middle ps-5">
+                                <strong>@movie.Title</strong>
+                            </td>
+                            <td class="align-middle">@movie.Rating</td>
+                            <td class="align-middle">@movie.ReleaseDate</td>
+                            <td class="align-middle">
+                                @string.Join(", ", ((IEnumerable<MovieGenre>)movie.MovieGenres).Select(g => g.Genre.Name))
+                            </td>
+                            <td class="align-middle">@movie.Runtime min</td>
+                            <td class="align-middle">@movie.Language</td>
+                            <td class="align-middle">
+                                <ul class="list-unstyled mb-0">
+                                    @foreach (var actor in ((IEnumerable<MovieActor>)movie.MovieActors).Take(5))
+                                    {
+                                        <li>@actor.Actor.Name</li>
+                                    }
+                                    @if (((IEnumerable<MovieActor>)movie.MovieActors).Count() > 5)
+                                    {
+                                        <li>...</li>
+                                    }
+                                </ul>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @{
+                int totalPages = (int)Math.Ceiling((double)Model.TotalResults / 10);
+                int currentPage = Model.CurrentPage;
+                int maxVisiblePages = 7;
+                int startPage = Math.Max(1, currentPage - 3);
+                int endPage = Math.Min(totalPages, startPage + maxVisiblePages - 1);
+
+                if (endPage - startPage < maxVisiblePages - 1)
+                {
+                    startPage = Math.Max(1, endPage - maxVisiblePages + 1);
+                }
+            }
+
+            @if (totalPages > 1)
+            {
+                <nav class="mt-4 mb-3 text-center">
+                    <ul class="pagination justify-content-center flex-wrap">
+
+                        @* Previous *@
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <form method="get" asp-controller="Movie" asp-action="Search" class="d-inline">
+                                <input type="hidden" name="page" value="@(currentPage - 1)" />
+                                <button class="page-link" title="Previous" aria-label="Previous">‹</button>
+                            </form>
+                        </li>
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <form method="get" asp-controller="Movie" asp-action="Search" class="d-inline">
+                                    <input type="hidden" name="query" value="@Model.Query" />
+                                    <input type="hidden" name="genreId" value="@Model.GenreId" />
+                                    <input type="hidden" name="minRating" value="@Model.MinRating" />
+                                    <input type="hidden" name="releaseYear" value="@Model.ReleaseYear" />
+                                    <input type="hidden" name="onlyFavorites" value="@Model.OnlyFavorites" />
+                                    <input type="hidden" name="page" value="@i" />
+                                    <button type="submit" class="page-link">@i</button>
+                                </form>
+                            </li>
+                        }
+
+                        @* Next *@
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <form method="get" asp-controller="Movie" asp-action="Search" class="d-inline">
+                                <input type="hidden" name="page" value="@(currentPage + 1)" />
+                                <button class="page-link" title="Next" aria-label="Next">›</button>
+                            </form>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-white-50 mt-3 text-center">No movies found matching your criteria.</p>
+    }
+</div>
+
+<script>
+    function redirectToDetails(movieId) {
+        window.location.href = '/Movie/Details/' + movieId;
+    }
+</script>

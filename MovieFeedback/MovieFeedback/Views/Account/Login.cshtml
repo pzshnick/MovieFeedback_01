@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="login-card p-5 rounded shadow">
+        <h2 class="text-white mb-4">Login</h2>
+
+        <form asp-action="Login" method="post">
+            <div class="mb-4">
+                <label class="form-label text-light">Username:</label>
+                <input type="text" name="username" class="form-control login-input" required />
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-light">Password:</label>
+                <input type="password" name="password" class="form-control login-input" required />
+            </div>
+            <div class="mb-2 mt-5">
+                <button type="submit" class="btn btn-outline-light w-100 py-2">Log In</button>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="mt-2 text-danger text-center">
+                    <strong>Incorrect username or password.</strong>
+                </div>
+            }
+
+            <div class="mt-5 text-center">
+                <small class="text-light">
+                    Or <a href="/Account/Register" class="text-decoration-underline text-info">create new account</a>
+                </small>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+﻿@model List<MovieFeedback.ViewModels.FavoriteMovieViewModel>
+
+<div class="container mt-4 text-white">
+    <h3>Your Favorite Movies</h3>
+    @if (!Model.Any())
+    {
+        <p class="text-muted">You haven't added any favorites yet.</p>
+    }
+    else
+    {
+        <div class="d-flex align-items-center mb-4">
+            <select id="exportFormat" class="form-select w-auto me-2">
+                <option value="csv">CSV</option>
+                <option value="xml">XML</option>
+                <option value="json">JSON</option>
+                <option value="rdf">RDF</option>
+            </select>
+            <button class="btn btn-outline-light" onclick="exportFavorites()">Export</button>
+        </div>
+        <table class="movies-table">
+            <thead>
+                <tr>
+                    <th>Poster</th>
+                    <th>Title</th>
+                    <th>Rating</th>
+                    <th>Release Date</th>
+                    <th>Genres</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var movie in Model)
+                {
+                    <tr onclick="redirectToDetails(@movie.MovieId)" style="cursor:pointer;">
+                        <td style="width:150px">
+                            <img src="@($"https://image.tmdb.org/t/p/w200{movie.PosterPath}")" class="img-fluid rounded" />
+                        </td>
+                        <td class="align-content-center">
+                            <span class="text-white text-decoration-none fw-bold">
+                                @movie.Title
+                            </span>
+                            <br />
+                            @if (movie.IsWatched)
+                            {
+                                <span class="text-success">
+                                    <i class="bi bi-eye-fill"></i> Watched
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-secondary">
+                                    <i class="bi bi-eye-slash-fill"></i> Not Watched
+                                </span>
+                            }
+                        </td>
+                        <td class="align-content-center">@movie.Rating</td>
+                        <td class="align-content-center">@movie.ReleaseDate.ToShortDateString()</td>
+                        <td class="align-content-center">@string.Join(", ", movie.Genres)</td>
+                        <td class="align-content-center">
+                            <form method="post" asp-controller="Movie" asp-action="RemoveFavorite" style="display:inline;" onmousedown="event.stopPropagation();">
+                                <input type="hidden" name="movieId" value="@movie.MovieId" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove from Favorites">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    }
+</div>
+
+<script>
+    function redirectToDetails(movieId) {
+        window.location.href = '/Movie/Details/' + movieId;
+    }
+
+     function exportFavorites() {
+        const format = document.getElementById('exportFormat').value;
+        window.location.href = `/Movie/ExportFavorites?format=${format}`;
+    }
+</script>
+

@@ -1,0 +1,35 @@
+﻿@using MovieFeedback.ViewModels;
+@model MovieSearchViewModel
+
+@{
+    ViewData["Title"] = "Search Results";
+}
+
+<div class="container mt-4">
+    <h4 class="text-white">@Model.Results.Count result(s) found:</h4>
+
+    @if (Model.Results.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+            @foreach (var movie in Model.Results)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@movie.Title</h5>
+                            <p class="card-text">
+                                <strong>Rating:</strong> @movie.Rating<br />
+                                <strong>Year:</strong> @movie.ReleaseDate<br />
+                                <strong>Genres:</strong> @string.Join(", ", movie.MovieGenres.Select(g => g.Genre.Name))
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-white-50 mt-3">No movies found matching your criteria.</p>
+    }
+</div>

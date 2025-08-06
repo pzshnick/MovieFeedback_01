@@ -1,0 +1,250 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MovieFeedback</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MovieFeedback.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo d-flex align-items-center gap-2">
+            <img src="/img/logo.png" style="width: 60px;" />
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MovieFeedback</a>
+        </div>
+
+
+        <div class="search-wrapper d-flex align-items-center gap-2 w-100 justify-content-center mt-2">
+            <form asp-controller="Movie" asp-action="Search" method="get" class="d-flex align-items-center gap-2 w-100">
+                <input type="text" name="query" id="searchInput" class="form-control form-control-sm flex-grow-1" placeholder="Search..." />
+
+                <button type="button" id="searchButton" class="btn btn-sm base-action-color d-flex align-items-center justify-content-center square-btn" title="Search">
+                    <i class="bi bi-search text-white"></i>
+                </button>
+
+
+                <button type="button" class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center square-btn" id="toggleFiltersBtn" title="Toggle filters">
+                    <i class="bi bi-sliders text-white"></i>
+                </button>
+            </form>
+        </div>
+
+        <button class="menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuDrawer" aria-controls="menuDrawer">
+            ☰
+        </button>
+    </header>
+
+    <div id="filterPanel" class="filter-overlay d-none">
+        <div class="filter-box p-4 rounded-4 shadow border border-secondary-subtle bg-dark bg-opacity-50">
+            <button type="button" class="btn-close btn-close-white ms-auto mb-3" aria-label="Close" onclick="closeFilterPanel()"></button>
+            <form asp-controller="Movie" asp-action="Search" method="get" class="d-flex flex-column gap-3">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="minRating" class="form-label text-white">Min Rating</label>
+                        <input type="number" step="0.1" min="0" max="10" name="minRating"
+                               class="form-control bg-dark text-white border-secondary rounded-pill" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="releaseYear" class="form-label text-white">Release Year</label>
+                        <input type="number" name="releaseYear"
+                               class="form-control bg-dark text-white border-secondary rounded-pill" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="genre" class="form-label text-white">Genre</label>
+                        <select name="genreId" class="form-select bg-dark text-white border-secondary rounded-pill">
+                            <option value="">Any</option>
+                            <option value="1">Comedy</option>
+                            <option value="2">Thriller</option>
+                            <option value="3">Drama</option>
+                            <option value="4">Animation</option>
+                            <option value="5">Romance</option>
+                            <option value="6">Adventure</option>
+                            <option value="7">Science Fiction</option>
+                            <option value="8">Action</option>
+                            <option value="9">Music</option>
+                            <option value="10">Family</option>
+                            <option value="11">Fantasy</option>
+                            <option value="12">Documentary</option>
+                            <option value="13">History</option>
+                            <option value="14">Mystery</option>
+                            <option value="15">War</option>
+                            <option value="16">Western</option>
+                            <option value="17">Crime</option>
+                            <option value="18">TV Movie</option>
+                            <option value="19">Horror</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="language" class="form-label text-white">Language</label>
+                        <select name="language" class="form-select bg-dark text-white border-secondary rounded-pill">
+                            <option value="">Any</option>
+                            <option value="fa">Persian</option>
+                            <option value="te">Telugu</option>
+                            <option value="zh">Chinese</option>
+                            <option value="da">Danish</option>
+                            <option value="lv">Latvian</option>
+                            <option value="fr">French</option>
+                            <option value="no">Norwegian</option>
+                            <option value="fi">Finnish</option>
+                            <option value="sv">Swedish</option>
+                            <option value="ar">Arabic</option>
+                            <option value="pt">Portuguese</option>
+                            <option value="id">Indonesian</option>
+                            <option value="ko">Korean</option>
+                            <option value="es">Spanish</option>
+                            <option value="nl">Dutch</option>
+                            <option value="de">German</option>
+                            <option value="hi">Hindi</option>
+                            <option value="tr">Turkish</option>
+                            <option value="cn">Cantonese</option>
+                            <option value="ja">Japanese</option>
+                            <option value="pl">Polish</option>
+                            <option value="it">Italian</option>
+                            <option value="hu">Hungarian</option>
+                            <option value="la">Latin</option>
+                            <option value="sr">Serbian</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column gap-2 text-white mt-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="onlyFavorites" id="onlyFavorites">
+                        <label class="form-check-label" for="onlyFavorites">Only Favorites</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="onlyPopular" id="onlyPopular">
+                        <label class="form-check-label" for="onlyPopular">Popular Only</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="onlyRecent" id="onlyRecent">
+                        <label class="form-check-label" for="onlyRecent">Recent Only</label>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-outline-light px-4" onclick="applyFilters()">Apply Filters</button>
+                </div>
+
+            </form>
+        </div>
+    </div> 
+
+    <div class="offcanvas offcanvas-end text-white p-3" tabindex="-1" id="menuDrawer" aria-labelledby="menuDrawerLabel">
+        <div class="offcanvas-header mt-1 align-items-center">
+            <h5 id="menuDrawerLabel">Menu</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <hr class="border-top border-secondary" />
+            <ul class="nav flex-column menu-links">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-house-fill me-2"></i>
+                        Home
+                    </a>
+                </li>
+                @if (User.IsInRole("User") || User.IsInRole("Admin"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Movie" asp-action="Favorites">
+                            <i class="bi bi-star-fill me-2"></i>
+                            Favorites
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Stats" asp-action="Statistics">
+                            <i class="bi bi-bar-chart-line-fill me-2"></i>
+                            Statistics
+                        </a>
+                    </li>
+                }
+            </ul>
+            <hr class="mt-4 mb-3 border-top border-secondary" />
+            <div class="auth-button justify-content-center mt-4">
+                <div class="auth-button text-center mt-4">
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <a href="/Account/Profile" class="user-block d-inline-flex justify-content-between align-items-center gap-3 px-4 py-3 rounded text-decoration-none">
+                            <span class="username text-white d-flex align-items-center gap-2">
+                                <span class="text-white">
+                                    <i class="bi bi-person-fill"></i>
+                                </span>
+                                <strong>@User.Identity.Name (@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("User") ? "User" : "Visitor"))</strong>
+                            </span>
+                            <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger border-2 fw-bold btn-sm">Logout</button>
+                            </form>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/Account/Login" class="auth-btn auth-btn-login btn me-2">Login</a>
+                        <a href="/Account/Register" class="auth-btn auth-btn-reg btn">Registration</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="statusMessage" class="alert alert-success glass-alert d-inline-flex align-items-center gap-2 p-3 px-4 rounded-4 shadow-sm mt-3 position-fixed top-0 start-50 translate-middle-x" role="alert" style="max-width: 500px; z-index: 1055;">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div id="statusMessage" class="alert alert-danger glass-alert d-inline-flex align-items-center gap-2 p-3 px-4 rounded-4 shadow-sm mt-3 position-fixed top-0 start-50 translate-middle-x" role="alert" style="max-width: 500px; z-index: 1055;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
+    }
+
+
+    <div class="container">
+        <main role="main" class="pb-5 mb-5">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer text-muted">
+        <div class="container">
+            &copy; 2025 - MovieFeedback - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script>
+        document.getElementById("toggleFiltersBtn").addEventListener("click", function () {
+            const panel = document.getElementById("filterPanel");
+            panel.classList.toggle("d-none");
+        });
+
+           window.addEventListener('DOMContentLoaded', function () {
+            const message = document.getElementById('statusMessage');
+            if (message) {
+                setTimeout(() => {
+                    message.classList.add('fade-out');
+                    setTimeout(() => {
+                        message.remove();
+                    }, 500);
+                }, 3000);
+            }
+        });
+
+    </script>
+    <script src="~/js/filterPanel.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

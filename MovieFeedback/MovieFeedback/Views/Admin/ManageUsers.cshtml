@@ -1,0 +1,135 @@
+﻿@model MovieFeedback.ViewModels.ManageUsersPageViewModel
+
+<div class="container mt-5">
+    <h2 class="text-white mb-4">Manage Users</h2>
+
+    <div class="glass-card p-4 mb-4">
+        <form asp-action="ManageUsers" method="get" class="row justify-content-center g-3">
+            <div class="col-12 col-md-10">
+                <input type="text" name="searchQuery" class="form-control login-input" placeholder="Search by Username..." value="@Model.SearchQuery" />
+            </div>
+            <div class="col-12 col-md-2 d-flex justify-content-center">
+                <button type="submit" class="btn btn-outline-light w-100">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class=".movies-table glass-card w-100 align-middle text-white mb-0">
+            <thead>
+                <tr class="text-center">
+                    <th class="px-4 py-3 text-start">Username</th>
+                    <th class="px-4 py-3 text-start">Email</th>
+                    <th class="px-4 py-3" style="width: 180px;">Role</th>
+                    <th class="px-4 py-3" style="width: 130px;">Status</th>
+                    <th class="px-4 py-3" style="width: 250px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td class="px-4 py-3 text-start">@user.Username</td>
+                        <td class="px-4 py-3 text-start">@user.Email</td>
+                        <td class="px-4 py-3 text-center">
+                            <form asp-action="ToggleRole" asp-controller="Admin" method="post">
+                                <input type="hidden" name="userId" value="@user.UserId" />
+                                <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    @foreach (var role in new[] { "Visitor", "User", "Admin" })
+                                    {
+                                        if (user.Role == role)
+                                        {
+                                            <option value="@role" selected>@role</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@role">@role</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        </td>
+
+                        <td class="px-4 py-3 text-center">
+                            @if (user.IsBanned)
+                            {
+                                <span class="badge bg-danger">Banned</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                        </td>
+
+                        <td class="px-4 py-3">
+                            <div class="d-flex justify-content-center gap-3">
+                                <form asp-action="ToggleBan" asp-controller="Admin" method="post" class="d-inline">
+                                    <input type="hidden" name="userId" value="@user.UserId" />
+                                    <button type="submit" class="btn btn-sm btn-warning px-3">
+                                        @(user.IsBanned ? "Unban" : "Ban")
+                                    </button>
+                                </form>
+
+                                <form asp-action="DeleteUser" asp-controller="Admin" method="post" class="d-inline">
+                                    <input type="hidden" name="userId" value="@user.UserId" />
+                                    <button type="submit" class="btn btn-sm btn-danger px-3">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @{
+        int totalPages = (int)Math.Ceiling((double)Model.TotalUsers / 50);
+        int currentPage = Model.CurrentPage;
+        int maxVisiblePages = 7;
+        int startPage = Math.Max(1, currentPage - 3);
+        int endPage = Math.Min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage < maxVisiblePages - 1)
+        {
+            startPage = Math.Max(1, endPage - maxVisiblePages + 1);
+        }
+    }
+
+    @if (totalPages > 1)
+    {
+        <nav class="mt-4 mb-3 text-center">
+            <ul class="pagination justify-content-center flex-wrap">
+
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <form method="get" asp-controller="Admin" asp-action="ManageUsers" class="d-inline">
+                        <input type="hidden" name="page" value="@(currentPage - 1)" />
+                        <input type="hidden" name="searchQuery" value="@Model.SearchQuery" />
+                        <button class="page-link" title="Previous" aria-label="Previous">‹</button>
+                    </form>
+                </li>
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <form method="get" asp-controller="Admin" asp-action="ManageUsers" class="d-inline">
+                            <input type="hidden" name="page" value="@i" />
+                            <input type="hidden" name="searchQuery" value="@Model.SearchQuery" />
+                            <button type="submit" class="page-link">@i</button>
+                        </form>
+                    </li>
+                }
+
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <form method="get" asp-controller="Admin" asp-action="ManageUsers" class="d-inline">
+                        <input type="hidden" name="page" value="@(currentPage + 1)" />
+                        <input type="hidden" name="searchQuery" value="@Model.SearchQuery" />
+                        <button class="page-link" title="Next" aria-label="Next">›</button>
+                    </form>
+                </li>
+
+            </ul>
+        </nav>
+    }
+</div>
